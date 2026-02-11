@@ -29,6 +29,13 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 // Minimal ABIs for frontend (only functions we call) - JSON format for wagmi v2
 export const SOCIAL_LEDGER_ABI = [
   {
+    inputs: [],
+    name: "nextPostId",
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [{ name: "postId", type: "uint256", internalType: "uint256" }],
     name: "getPost",
     outputs: [

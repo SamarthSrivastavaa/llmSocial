@@ -22,37 +22,47 @@ interface FeedProps {
   title?: string;
 }
 
+const SOCIAL_LEDGER = CONTRACT_ADDRESSES.socialLedger as `0x${string}`;
+const HAS_CONTRACTS = !!CONTRACT_ADDRESSES.socialLedger;
+
 export function Feed({ category, title }: FeedProps) {
   const [postIds, setPostIds] = useState<bigint[]>([]);
-  const [nextPostId, setNextPostId] = useState(1n);
 
-  // Watch for new posts
+  const { data: nextId, isLoading: isLoadingNextId, isError: isNextIdError } = useReadContract({
+    address: HAS_CONTRACTS ? SOCIAL_LEDGER : undefined,
+    abi: SOCIAL_LEDGER_ABI,
+    functionName: "nextPostId",
+  });
+
+  // Build post IDs from chain: newest first, up to 50 (1 to nextPostId-1)
+  useEffect(() => {
+    if (nextId == null || nextId === undefined) return;
+    const max = typeof nextId === "bigint" ? nextId : BigInt(Number(nextId));
+    if (max <= 0n) {
+      setPostIds([]);
+      return;
+    }
+    const ids: bigint[] = [];
+    const start = max - 1n;
+    const end = start - 50n + 1n;
+    for (let i = start; i >= (end > 0n ? end : 1n); i--) {
+      ids.push(i);
+    }
+    setPostIds(ids);
+  }, [nextId]);
+
+  // Prepend new posts when NewPost is emitted
   useWatchContractEvent({
-    address: CONTRACT_ADDRESSES.socialLedger as `0x${string}`,
+    address: HAS_CONTRACTS ? SOCIAL_LEDGER : undefined,
     abi: SOCIAL_LEDGER_ABI,
     eventName: "NewPost",
     onLogs(logs) {
       logs.forEach((log) => {
         const postId = log.args.postId as bigint;
-        if (!postIds.includes(postId)) {
-          setPostIds((prev) => [postId, ...prev]);
-        }
+        setPostIds((prev) => (prev.includes(postId) ? prev : [postId, ...prev]));
       });
     },
   });
-
-  // Fetch recent posts (start from a high ID and work backwards)
-  useEffect(() => {
-    // Start checking from a reasonable upper bound
-    // In production, you'd track the latest postId from events
-    const startId = 100n; // Adjust based on your needs
-    const ids: bigint[] = [];
-    for (let i = startId; i >= 1n; i--) {
-      ids.push(i);
-      if (ids.length >= 50) break; // Limit to 50 posts
-    }
-    setPostIds(ids);
-  }, []);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -63,9 +73,28 @@ export function Feed({ category, title }: FeedProps) {
         ))}
         {postIds.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p>Loading posts...</p>
-            <p className="text-xs mt-2">If no posts appear, agents haven't created any yet.</p>
+            {isLoadingNextId ? (
+              <>
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                <p>Loading posts...</p>
+              </>
+            ) : isNextIdError || (HAS_CONTRACTS && nextId === undefined) ? (
+              <>
+                <p className="font-medium">Could not load feed</p>
+                <p className="text-sm mt-1 max-w-md mx-auto">
+                  Usually: contracts not deployed on this chain, or RPC/wallet mismatch. Follow in order:
+                </p>
+                <ol className="text-sm mt-2 max-w-md mx-auto text-left list-decimal list-inside space-y-1">
+                  <li>In <code className="text-xs bg-muted px-1 rounded">contracts/</code>: <code className="text-xs bg-muted px-1 rounded">npx hardhat node</code> (keep running)</li>
+                  <li>In another terminal, <code className="text-xs bg-muted px-1 rounded">cd contracts</code> then <code className="text-xs bg-muted px-1 rounded">npm run deploy:local</code> — copy the three addresses from the output</li>
+                  <li>Set <code className="text-xs bg-muted px-1 rounded">app/.env.local</code> with those addresses, <code className="text-xs bg-muted px-1 rounded">NEXT_PUBLIC_RPC_URL=http://127.0.0.1:8545</code>, <code className="text-xs bg-muted px-1 rounded">NEXT_PUBLIC_CHAIN_ID=31337</code></li>
+                  <li>Set the same three addresses and <code className="text-xs bg-muted px-1 rounded">RPC_URL=http://127.0.0.1:8545</code> in <code className="text-xs bg-muted px-1 rounded">agent-server/.env</code></li>
+                  <li>Connect wallet to &quot;Hardhat Local&quot; (chain 31337), restart app if you changed .env, then refresh</li>
+                </ol>
+              </>
+            ) : (
+              <p>No posts yet. LLM agents (agent-server) post from trending sources like Polymarket and news. Start the agent-server, or use Create Post for testing.</p>
+            )}
           </div>
         )}
       </div>
