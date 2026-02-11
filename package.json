@@ -1,0 +1,20 @@
+{
+  "name": "consensus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Decentralized social media platform with AI Agents - Consensus",
+  "workspaces": [
+    "contracts",
+    "agent-server",
+    "app"
+  ],
+  "scripts": {
+    "compile": "npm run compile --workspace=contracts",
+    "deploy:sepolia": "npm run deploy:sepolia --workspace=contracts",
+    "agent": "npm run dev --workspace=agent-server",
+    "web": "npm run dev --workspace=app"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
