@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { ThumbsUp, ThumbsDown, CheckCircle2, XCircle, Clock, Loader2, Gavel } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Gavel,
+  Shield,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Category, CATEGORY_LABELS } from "@/lib/contracts";
 import { StakingModal } from "./StakingModal";
 import { ResolveRoundModal } from "./ResolveRoundModal";
-import { fetchFromIpfs, formatIpfsHash } from "@/lib/ipfs";
+import { MOCK_CONTENT } from "@/lib/mockData";
 
 interface Post {
   id: bigint;
@@ -29,130 +37,205 @@ interface TweetCardProps {
   onVote?: (postId: bigint, support: boolean) => void;
 }
 
-export function TweetCard({ post, reputationScore, verificationStatus, onVote }: TweetCardProps) {
+// Friendly abstract avatar — generates soft pastel from address
+function AgentAvatar({ address }: { address: string }) {
+  const hue = parseInt(address.slice(2, 6), 16) % 360;
+  const initials = address.slice(2, 4).toUpperCase();
+
+  return (
+    <div
+      className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold shrink-0"
+      style={{
+        backgroundColor: `hsl(${hue}, 45%, 92%)`,
+        color: `hsl(${hue}, 45%, 35%)`,
+      }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+export function TweetCard({
+  post,
+  reputationScore,
+  verificationStatus,
+  onVote,
+}: TweetCardProps) {
   const [showStakeModal, setShowStakeModal] = useState(false);
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [voteType, setVoteType] = useState<"up" | "down" | null>(null);
-  const [ipfsContent, setIpfsContent] = useState<string | null>(null);
-  const [isLoadingContent, setIsLoadingContent] = useState(true);
 
-  const timeAgo = formatDistanceToNow(new Date(Number(post.timestamp) * 1000), { addSuffix: true });
-  const shortAddress = `${post.author.slice(0, 6)}...${post.author.slice(-4)}`;
+  const timeAgo = useMemo(
+    () =>
+      formatDistanceToNow(new Date(Number(post.timestamp) * 1000), {
+        addSuffix: true,
+      }),
+    [post.timestamp]
+  );
 
-  useEffect(() => {
-    const loadContent = async () => {
-      setIsLoadingContent(true);
-      const content = await fetchFromIpfs(post.ipfsHash);
-      setIpfsContent(content);
-      setIsLoadingContent(false);
-    };
-    loadContent();
-  }, [post.ipfsHash]);
+  const shortAddress = useMemo(
+    () => `${post.author.slice(0, 6)}…${post.author.slice(-4)}`,
+    [post.author]
+  );
 
-  const getVerificationBadge = () => {
-    if (verificationStatus === "valid") {
-      return (
-        <Badge variant="default" className="bg-green-500">
-          <CheckCircle2 className="h-3 w-3 mr-1" />
-          Verified
-        </Badge>
-      );
+  // Use mock content directly
+  const content = MOCK_CONTENT[post.id.toString()] || null;
+
+  const handleAgree = useCallback(() => {
+    setVoteType("up");
+    setShowStakeModal(true);
+  }, []);
+
+  const handleDisagree = useCallback(() => {
+    setVoteType("down");
+    setShowStakeModal(true);
+  }, []);
+
+  const handleResolve = useCallback(() => {
+    setShowResolveModal(true);
+  }, []);
+
+  const handleCloseStake = useCallback(() => {
+    setShowStakeModal(false);
+    setVoteType(null);
+  }, []);
+
+  const handleCloseResolve = useCallback(() => {
+    setShowResolveModal(false);
+  }, []);
+
+  const handleResolved = useCallback(() => {
+    setShowResolveModal(false);
+  }, []);
+
+  const verificationBadge = useMemo(() => {
+    switch (verificationStatus) {
+      case "valid":
+        return (
+          <Badge variant="agree" className="gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Verified
+          </Badge>
+        );
+      case "invalid":
+        return (
+          <Badge variant="disagree" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Disputed
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge variant="pending" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
+      default:
+        return null;
     }
-    if (verificationStatus === "invalid") {
-      return (
-        <Badge variant="destructive">
-          <XCircle className="h-3 w-3 mr-1" />
-          Disputed
-        </Badge>
-      );
-    }
-    if (verificationStatus === "pending") {
-      return (
-        <Badge variant="secondary">
-          <Clock className="h-3 w-3 mr-1" />
-          Pending
-        </Badge>
-      );
-    }
-    return null;
-  };
+  }, [verificationStatus]);
+
+  const stakeForEth = useMemo(
+    () => (Number(post.upvotes) / 1e18).toFixed(4),
+    [post.upvotes]
+  );
+  const stakeAgainstEth = useMemo(
+    () => (Number(post.downvotes) / 1e18).toFixed(4),
+    [post.downvotes]
+  );
 
   return (
     <>
-      <Card className="mb-4 hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-              {shortAddress.slice(2, 4).toUpperCase()}
-            </div>
+      <Card className="animate-fade-in">
+        <CardContent className="p-5">
+          <div className="flex gap-3.5">
+            <AgentAvatar address={post.author} />
+
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold">{shortAddress}</span>
-                {reputationScore !== undefined && (
-                  <Badge variant="outline" className="text-xs">
-                    Rep: {reputationScore}
-                  </Badge>
+              {/* Meta row */}
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="font-medium text-sm text-foreground">
+                  {shortAddress}
+                </span>
+                {reputationScore !== undefined && reputationScore > 50 && (
+                  <Shield className="h-3.5 w-3.5 text-agree" />
                 )}
-                {getVerificationBadge()}
-                <Badge variant="outline" className="text-xs">
+                <span className="text-xs text-muted-foreground">
+                  {timeAgo}
+                </span>
+                <Badge variant="secondary" className="text-[10px] ml-auto">
                   {CATEGORY_LABELS[post.category]}
                 </Badge>
-                <span className="text-xs text-muted-foreground">· {timeAgo}</span>
               </div>
-              <div className="text-sm mb-3 whitespace-pre-wrap break-words">
-                {isLoadingContent ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Loading content from IPFS...</span>
-                  </div>
-                ) : ipfsContent ? (
-                  <p className="mb-2">{ipfsContent}</p>
+
+              {/* Content */}
+              <div className="mb-3">
+                {content ? (
+                  <p className="text-[15px] text-foreground/90 leading-relaxed">
+                    {content}
+                  </p>
                 ) : (
-                  <div className="text-muted-foreground">
-                    <p className="mb-1">[IPFS: {formatIpfsHash(post.ipfsHash)}]</p>
-                    <p className="text-xs italic">Content not available on IPFS gateways</p>
-                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Content unavailable
+                  </p>
                 )}
               </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+
+              {/* Verification badge */}
+              {verificationBadge && (
+                <div className="mb-3">{verificationBadge}</div>
+              )}
+
+              {/* Actions — calm pill buttons */}
+              <div className="flex items-center gap-2">
                 <Button
-                  variant="ghost"
+                  variant="agree"
                   size="sm"
-                  onClick={() => {
-                    setVoteType("up");
-                    setShowStakeModal(true);
-                  }}
-                  className="gap-1"
+                  onClick={handleAgree}
+                  className="gap-1.5"
                 >
-                  <ThumbsUp className="h-4 w-4" />
-                  {post.upvotes.toString()}
+                  <ThumbsUp className="h-3.5 w-3.5" />
+                  Agree
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="disagree"
                   size="sm"
-                  onClick={() => {
-                    setVoteType("down");
-                    setShowStakeModal(true);
-                  }}
-                  className="gap-1"
+                  onClick={handleDisagree}
+                  className="gap-1.5"
                 >
-                  <ThumbsDown className="h-4 w-4" />
-                  {post.downvotes.toString()}
+                  <ThumbsDown className="h-3.5 w-3.5" />
+                  Disagree
                 </Button>
+
                 {verificationStatus === "pending" && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowResolveModal(true)}
-                    className="gap-1"
-                    title="Resolve round"
+                    onClick={handleResolve}
+                    className="gap-1 ml-auto"
+                    title="Resolve this round"
                   >
-                    <Gavel className="h-4 w-4" />
+                    <Gavel className="h-3.5 w-3.5" />
                     Resolve
                   </Button>
                 )}
-                <span className="text-xs">ID: {post.id.toString()}</span>
               </div>
+
+              {/* Quiet stake metadata */}
+              {(Number(post.upvotes) > 0 || Number(post.downvotes) > 0) && (
+                <div className="flex items-center gap-3 mt-2.5 text-[11px] text-muted-foreground">
+                  <span className="font-mono">
+                    {stakeForEth} ETH for
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="font-mono">
+                    {stakeAgainstEth} ETH against
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="font-mono">#{post.id.toString()}</span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -162,21 +245,15 @@ export function TweetCard({ post, reputationScore, verificationStatus, onVote }:
         <StakingModal
           postId={post.id}
           voteType={voteType}
-          onClose={() => {
-            setShowStakeModal(false);
-            setVoteType(null);
-          }}
+          onClose={handleCloseStake}
           onVote={onVote}
         />
       )}
       {showResolveModal && (
         <ResolveRoundModal
           postId={post.id}
-          onClose={() => setShowResolveModal(false)}
-          onResolved={() => {
-            setShowResolveModal(false);
-            // Refresh or update UI
-          }}
+          onClose={handleCloseResolve}
+          onResolved={handleResolved}
         />
       )}
     </>

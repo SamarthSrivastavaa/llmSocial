@@ -1,10 +1,14 @@
 "use client";
 
-import { useWriteContract, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { useMemo, useCallback } from "react";
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useReadContract,
+} from "wagmi";
 import { STAKING_GAME_ABI, CONTRACT_ADDRESSES } from "@/lib/contracts";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { X, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { X, CheckCircle2, XCircle, AlertCircle, Scale } from "lucide-react";
 
 interface ResolveRoundModalProps {
   postId: bigint;
@@ -12,9 +16,14 @@ interface ResolveRoundModalProps {
   onResolved?: () => void;
 }
 
-export function ResolveRoundModal({ postId, onClose, onResolved }: ResolveRoundModalProps) {
+export function ResolveRoundModal({
+  postId,
+  onClose,
+  onResolved,
+}: ResolveRoundModalProps) {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: isConfirming, isSuccess } =
+    useWaitForTransactionReceipt({ hash });
 
   const { data: roundData } = useReadContract({
     address: CONTRACT_ADDRESSES.stakingGame as `0x${string}`,
@@ -23,14 +32,14 @@ export function ResolveRoundModal({ postId, onClose, onResolved }: ResolveRoundM
     args: [postId],
   });
 
-  const handleResolve = () => {
+  const handleResolve = useCallback(() => {
     writeContract({
       address: CONTRACT_ADDRESSES.stakingGame as `0x${string}`,
       abi: STAKING_GAME_ABI,
       functionName: "resolveRound",
       args: [postId],
     });
-  };
+  }, [postId, writeContract]);
 
   if (isSuccess) {
     setTimeout(() => {
@@ -43,111 +52,153 @@ export function ResolveRoundModal({ postId, onClose, onResolved }: ResolveRoundM
   const totalInvalid = roundData?.[2] ? Number(roundData[2]) : 0;
   const endTime = roundData?.[3] ? Number(roundData[3]) : 0;
   const resolved = roundData?.[4] || false;
-  const canResolve = !resolved && endTime > 0 && Date.now() / 1000 >= endTime;
+  const canResolve =
+    !resolved && endTime > 0 && Date.now() / 1000 >= endTime;
 
-  const getOutcome = () => {
-    if (totalValid > totalInvalid) return { type: "valid", icon: CheckCircle2, color: "text-green-600" };
-    if (totalInvalid > totalValid) return { type: "invalid", icon: XCircle, color: "text-red-600" };
-    return { type: "tie", icon: AlertCircle, color: "text-yellow-600" };
-  };
-
-  const outcome = getOutcome();
+  const outcome = useMemo(() => {
+    if (totalValid > totalInvalid)
+      return {
+        icon: CheckCircle2,
+        color: "text-agree",
+        bg: "bg-agree/[0.06]",
+        label: "Consensus: Valid",
+      };
+    if (totalInvalid > totalValid)
+      return {
+        icon: XCircle,
+        color: "text-disagree",
+        bg: "bg-disagree/[0.06]",
+        label: "Consensus: Disputed",
+      };
+    return {
+      icon: AlertCircle,
+      color: "text-pending",
+      bg: "bg-pending/[0.06]",
+      label: "Consensus: Undecided",
+    };
+  }, [totalValid, totalInvalid]);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Resolve Verification Round</CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md bg-white rounded-2xl shadow-modal animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
+              <Scale className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                Resolve Verification
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Post #{postId.toString()}
+              </p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">Post ID: {postId.toString()}</p>
-            {resolved ? (
-              <div className="p-3 bg-muted rounded-md">
-                <p className="text-sm font-medium mb-1">Already Resolved</p>
-                <div className={`flex items-center gap-2 ${outcome.color}`}>
-                  <outcome.icon className="h-4 w-4" />
-                  <span className="text-sm">
-                    {outcome.type === "valid" ? "Valid" : outcome.type === "invalid" ? "Invalid" : "Tie"}
-                  </span>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 pb-5 space-y-4">
+          {resolved ? (
+            <div className={`p-4 rounded-xl ${outcome.bg}`}>
+              <div className={`flex items-center gap-2 ${outcome.color}`}>
+                <outcome.icon className="h-5 w-5" />
+                <span className="text-sm font-semibold">{outcome.label}</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Stake comparison */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-agree/[0.05]">
+                  <p className="text-[11px] text-muted-foreground mb-0.5">
+                    Valid
+                  </p>
+                  <p className="text-base font-semibold font-mono text-agree">
+                    {(totalValid / 1e18).toFixed(4)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-mono">
+                    ETH
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-disagree/[0.05]">
+                  <p className="text-[11px] text-muted-foreground mb-0.5">
+                    Disputed
+                  </p>
+                  <p className="text-base font-semibold font-mono text-disagree">
+                    {(totalInvalid / 1e18).toFixed(4)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-mono">
+                    ETH
+                  </p>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="p-3 border rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Valid Stakes</p>
-                    <p className="text-lg font-semibold text-green-600">
-                      {(totalValid / 1e18).toFixed(4)} ETH
-                    </p>
-                  </div>
-                  <div className="p-3 border rounded-md">
-                    <p className="text-xs text-muted-foreground mb-1">Invalid Stakes</p>
-                    <p className="text-lg font-semibold text-red-600">
-                      {(totalInvalid / 1e18).toFixed(4)} ETH
-                    </p>
-                  </div>
-                </div>
-                {canResolve ? (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
-                    <p className="text-sm text-yellow-800">
-                      Voting period has ended. You can resolve this round.
-                    </p>
-                    {totalValid > totalInvalid && (
-                      <p className="text-xs text-yellow-700 mt-1">
-                        Valid wins → Author and valid voters get refunded
-                      </p>
-                    )}
-                    {totalInvalid > totalValid && (
-                      <p className="text-xs text-yellow-700 mt-1">
-                        Invalid wins → Author and valid voters get slashed, invalid voters split funds
-                      </p>
-                    )}
-                    {totalValid === totalInvalid && (
-                      <p className="text-xs text-yellow-700 mt-1">Tie → All funds refunded</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-3 bg-muted rounded-md mb-4">
-                    <p className="text-sm text-muted-foreground">
-                      Voting period ends: {new Date(endTime * 1000).toLocaleString()}
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+
+              {/* Status */}
+              {canResolve ? (
+                <p className="text-xs text-muted-foreground bg-muted p-3 rounded-xl">
+                  Voting has ended — ready to resolve.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground bg-muted p-3 rounded-xl">
+                  Voting ends:{" "}
+                  <span className="font-mono text-foreground">
+                    {new Date(endTime * 1000).toLocaleString()}
+                  </span>
+                </p>
+              )}
+            </>
+          )}
+
           {error && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+            <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-xl">
               {error.message}
-            </div>
+            </p>
           )}
           {isSuccess && (
-            <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
-              Round resolved successfully!
+            <div className="flex items-center gap-2 text-xs text-agree bg-agree/[0.06] p-2.5 rounded-xl">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Round resolved.
             </div>
           )}
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 pt-1">
             {canResolve && !resolved && (
               <Button
                 onClick={handleResolve}
                 disabled={isPending || isConfirming || isSuccess}
                 className="flex-1"
               >
-                {isPending || isConfirming ? "Resolving..." : isSuccess ? "Resolved!" : "Resolve Round"}
+                {isPending || isConfirming
+                  ? "Resolving…"
+                  : isSuccess
+                  ? "Done"
+                  : "Resolve Round"}
               </Button>
             )}
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className={!canResolve || resolved ? "flex-1" : ""}
+            >
               {resolved ? "Close" : "Cancel"}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

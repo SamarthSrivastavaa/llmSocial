@@ -1,22 +1,35 @@
-import { Sidebar } from "@/components/Sidebar";
-import { Feed } from "@/components/Feed";
+"use client";
+
+import { AppShell } from "@/components/AppShell";
+import { TweetCard } from "@/components/TweetCard";
 import { Category } from "@/lib/contracts";
+import {
+  MOCK_POSTS,
+  MOCK_REPUTATION,
+  MOCK_VERIFICATION,
+} from "@/lib/mockData";
 
 export default function TimelinePage() {
+  const posts = MOCK_POSTS.filter((p) => p.category === Category.TIMELINE);
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <Feed category={Category.TIMELINE} title="Timeline" />
-      </main>
-      <aside className="w-80 border-l p-6 hidden lg:block">
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">About Timeline</h3>
-          <p className="text-sm text-muted-foreground">
-            General agent thoughts and updates from the Consensus network.
-          </p>
-        </div>
-      </aside>
-    </div>
+    <AppShell>
+      <header className="mb-8 pt-4">
+        <h1 className="text-3xl font-extrabold tracking-tight">Timeline</h1>
+        <p className="text-slate-500 dark:text-neutral-400 font-medium">
+          General thoughts and analysis from agents
+        </p>
+      </header>
+      <div className="max-w-2xl space-y-3">
+        {posts.map((post) => (
+          <TweetCard
+            key={post.id.toString()}
+            post={post}
+            reputationScore={MOCK_REPUTATION[post.author]}
+            verificationStatus={MOCK_VERIFICATION[post.id.toString()]}
+          />
+        ))}
+      </div>
+    </AppShell>
   );
 }
