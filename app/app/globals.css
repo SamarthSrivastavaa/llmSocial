@@ -3,49 +3,31 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+  html {
+    color-scheme: dark;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+  :root {
+    --background: 5 5 5; /* #050505 */
+    --foreground: 255 255 255; /* #FFFFFF */
+    --card: 10 10 10; /* #0A0A0A */
+    --card-foreground: 255 255 255;
+    --popover: 10 10 10;
+    --popover-foreground: 255 255 255;
+    --primary: 255 218 185; /* #FFDAB9 */
+    --primary-foreground: 0 0 0;
+    --secondary: 10 10 10;
+    --secondary-foreground: 255 255 255;
+    --muted: 102 102 102; /* #666666 */
+    --muted-foreground: 102 102 102;
+    --accent: 255 218 185;
+    --accent-foreground: 0 0 0;
+    --destructive: 255 77 77; /* #FF4D4D */
+    --destructive-foreground: 255 255 255;
+    --border: 26 26 26; /* #1A1A1A */
+    --input: 26 26 26;
+    --ring: 255 218 185;
+    --radius: 4px;
   }
 }
 
@@ -53,7 +35,147 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#050505] text-foreground antialiased;
+    font-family: var(--font-condensed), 'Inter', 'Roboto Condensed', sans-serif;
+    /* Subtle square grid overlay - 40px spacing */
+    background-image:
+      linear-gradient(to right, rgba(26, 26, 26, 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(26, 26, 26, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 0;
   }
+}
+
+/* Custom scrollbar - terminal style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2a;
+}
+
+/* Glassmorphism effect for cards */
+.glass-card {
+  backdrop-filter: blur(10px);
+  background-color: rgba(10, 10, 10, 0.8);
+}
+
+/* Enhanced card readability and depth */
+.post-card {
+  background: linear-gradient(135deg, rgba(39, 39, 42, 0.95) 0%, rgba(24, 24, 27, 0.95) 100%);
+  border: 1px solid rgba(113, 113, 122, 0.3);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.8),
+    0 2px 4px -1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.post-card:hover {
+  border-color: rgba(255, 218, 185, 0.4);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.9),
+    0 4px 6px -2px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(255, 218, 185, 0.05),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Trending sidebar enhancements */
+.trending-item {
+  position: relative;
+  background: linear-gradient(135deg, rgba(39, 39, 42, 0.3) 0%, rgba(24, 24, 27, 0.3) 100%);
+}
+
+.trending-item:hover {
+  background: linear-gradient(135deg, rgba(255, 218, 185, 0.15) 0%, rgba(255, 218, 185, 0.05) 100%);
+  box-shadow: 
+    inset 4px 0 0 rgba(255, 218, 185, 0.6),
+    0 0 20px rgba(255, 218, 185, 0.1);
+  transform: translateX(2px);
+}
+
+.trending-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 218, 185, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.trending-item:hover::before {
+  opacity: 1;
+}
+
+/* Terminal text styles */
+.terminal-text {
+  font-family: var(--font-mono), 'JetBrains Mono', 'Roboto Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+}
+
+/* Material Symbols */
+.material-symbols-rounded {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Profile Page Styles */
+.geometric-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 218, 185, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 218, 185, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.sparkline-path {
+  stroke: #FFDAB9;
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linecap: round;
+}
+
+/* RainbowKit Custom Styling for Terminal Theme */
+.rainbowkit-connect-button-wrapper {
+  --rk-radii-connectButton: 2px;
+  --rk-colors-connectButtonBackground: transparent;
+  --rk-colors-connectButtonBackgroundHover: rgba(255, 255, 255, 0.1);
+  --rk-colors-connectButtonText: #ffffff;
+  --rk-colors-connectButtonTextHover: #ffffff;
+  --rk-colors-connectButtonBorder: #ffffff;
+  --rk-fontSizes-connectButton: 12px;
+  --rk-fontWeights-connectButton: 500;
+  --rk-fonts-connectButton: var(--font-mono), 'JetBrains Mono', 'Roboto Mono', monospace;
+  --rk-letterSpacings-connectButton: 0.05em;
+  --rk-textTransforms-connectButton: uppercase;
+}
+
+/* Override RainbowKit modal styles for terminal theme */
+[data-rk] {
+  --rk-radii-actionButton: 2px;
+  --rk-radii-modal: 4px;
+  --rk-colors-modalBackground: #0A0A0A;
+  --rk-colors-modalBorder: #1A1A1A;
+  --rk-colors-modalText: #FFFFFF;
+  --rk-colors-modalTextSecondary: #666666;
+  --rk-colors-accentColor: #FFDAB9;
+  --rk-colors-accentColorForeground: #000000;
+  --rk-colors-closeButton: #666666;
+  --rk-colors-closeButtonBackground: transparent;
+  --rk-fonts-body: var(--font-condensed), 'Inter', sans-serif;
+  --rk-fonts-heading: var(--font-condensed), 'Inter', sans-serif;
 }

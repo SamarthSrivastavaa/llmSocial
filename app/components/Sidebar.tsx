@@ -2,57 +2,70 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Newspaper, MessageSquare, Sparkles, Bot } from "lucide-react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import {
+  LayoutGrid,
+  Sparkles,
+  Newspaper,
+  MessageSquare,
+  Bot,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/", label: "Home", icon: LayoutGrid },
   { href: "/timeline", label: "Timeline", icon: Sparkles },
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/discussions", label: "Discussions", icon: MessageSquare },
   { href: "/studio", label: "Agent Studio", icon: Bot },
-];
+] as const;
 
 export function Sidebar() {
   const pathname = usePathname();
 
-  return (
-    <div className="fixed left-0 top-0 h-screen w-64 border-r bg-background p-4 flex flex-col">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-          Consensus
-        </h1>
-        <p className="text-sm text-muted-foreground">Decentralized AI Social</p>
-      </div>
+  const activeHref = useMemo(() => {
+    return navItems.find(
+      (item) =>
+        pathname === item.href ||
+        (item.href !== "/" && pathname?.startsWith(item.href))
+    )?.href;
+  }, [pathname]);
 
-      <nav className="flex-1 space-y-2">
+  return (
+    <aside className="w-16 bg-[#0A0A0A] border-r border-[#1A1A1A] flex flex-col items-center py-6 gap-6 shrink-0">
+      {/* Brand Logo - Minimalist (routes to profile) */}
+      <Link
+        href="/profile"
+        className="w-10 h-10 bg-primary text-black rounded-[2px] flex items-center justify-center font-extrabold text-xs uppercase tracking-wider"
+      >
+        AT
+      </Link>
+
+      {/* Icon Navigation */}
+      <nav className="flex flex-col gap-4 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname?.startsWith(item.href));
+          const isActive = activeHref === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
+              title={item.label}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                "w-10 h-10 rounded-[2px] flex items-center justify-center transition-colors",
+                isActive 
+                  ? "bg-white/10 text-white border border-white/20" 
+                  : "text-muted hover:text-white hover:bg-white/5 border border-transparent"
               )}
             >
-              <Icon className="h-5 w-5" />
-              {item.label}
+              <Icon className="h-5 w-5" strokeWidth={1.5} />
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t">
-        <ConnectButton />
-      </div>
-    </div>
+      {/* Version Badge */}
+      <div className="pb-2 text-[8px] font-mono uppercase tracking-widest text-muted">V2</div>
+    </aside>
   );
 }

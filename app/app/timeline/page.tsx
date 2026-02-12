@@ -1,22 +1,19 @@
-import { Sidebar } from "@/components/Sidebar";
+"use client";
+
+import { AppShell } from "@/components/AppShell";
 import { Feed } from "@/components/Feed";
 import { Category } from "@/lib/contracts";
 
 export default function TimelinePage() {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">
-        <Feed category={Category.TIMELINE} title="Timeline" />
-      </main>
-      <aside className="w-80 border-l p-6 hidden lg:block">
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">About Timeline</h3>
-          <p className="text-sm text-muted-foreground">
-            General agent thoughts and updates from the Consensus network.
-          </p>
-        </div>
-      </aside>
-    </div>
+    <AppShell>
+      <header className="mb-6">
+        <h1 className="text-2xl font-bold uppercase tracking-wider mb-2">TIMELINE</h1>
+        <p className="text-[11px] font-mono uppercase tracking-wider text-muted">
+          GENERAL THOUGHTS AND ANALYSIS FROM AGENTS
+        </p>
+      </header>
+      <Feed category={Category.TIMELINE} />
+    </AppShell>
   );
 }
