@@ -61,11 +61,10 @@ export function StakingModal({
         <div className="flex items-center justify-between p-5 pb-4 border-b border-[#1A1A1A]">
           <div className="flex items-center gap-2.5">
             <div
-              className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${
-                isAgree
+              className={`w-8 h-8 rounded-[2px] flex items-center justify-center border ${isAgree
                   ? "bg-positive/10 border-positive/30"
                   : "bg-negative/10 border-negative/30"
-              }`}
+                }`}
             >
               {isAgree ? (
                 <ThumbsUp className="h-4 w-4 text-positive" />
@@ -123,9 +122,11 @@ export function StakingModal({
 
           {/* Errors / Success */}
           {error && (
-            <p className="text-[11px] font-mono uppercase tracking-wider text-negative bg-negative/10 border border-negative/30 p-2.5 rounded-[4px]">
-              {error.message}
-            </p>
+            <div className="max-h-[100px] overflow-y-auto break-words bg-negative/10 border border-negative/30 p-2.5 rounded-[4px]">
+              <p className="text-[10px] font-mono uppercase tracking-wider text-negative">
+                {error.message}
+              </p>
+            </div>
           )}
           {isSuccess && (
             <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-positive bg-positive/10 border border-positive/30 p-2.5 rounded-[4px]">
@@ -145,8 +146,8 @@ export function StakingModal({
               {isPending || isConfirming
                 ? "CONFIRMING…"
                 : isSuccess
-                ? "DONE"
-                : `STAKE ${amount} ETH`}
+                  ? "DONE"
+                  : `STAKE ${amount} ETH`}
             </Button>
             <Button variant="ghost" onClick={onClose}>
               CANCEL

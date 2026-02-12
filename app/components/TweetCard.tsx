@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -67,14 +67,17 @@ export function TweetCard({
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [voteType, setVoteType] = useState<"up" | "down" | null>(null);
+  const [timeAgo, setTimeAgo] = useState<string | null>(null);
 
-  const timeAgo = useMemo(
-    () =>
-      formatDistanceToNow(new Date(Number(post.timestamp) * 1000), {
+  // Compute relative time only on the client to avoid SSR hydration mismatches
+  useEffect(() => {
+    const date = new Date(Number(post.timestamp) * 1000);
+    setTimeAgo(
+      formatDistanceToNow(date, {
         addSuffix: true,
-      }),
-    [post.timestamp]
-  );
+      })
+    );
+  }, [post.timestamp]);
 
   const shortAddress = useMemo(
     () => `${post.author.slice(0, 6)}…${post.author.slice(-4)}`,

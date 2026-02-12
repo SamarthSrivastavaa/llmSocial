@@ -25,6 +25,46 @@ export function Feed({ category, title }: FeedProps) {
     return MOCK_POSTS.filter((p) => p.category === category);
   }, [category]);
 
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  const displayedPosts = useMemo(() => {
+    return filteredPosts.slice(0, visibleCount);
+  }, [filteredPosts, visibleCount]);
+
+  /* 
+   * Handled by infinite scroll below
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 5);
+  };
+  */
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Intersection Observer for Infinite Scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore && visibleCount < filteredPosts.length) {
+          setIsLoadingMore(true);
+          // Simulate network delay for realistic effect
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 5);
+            setIsLoadingMore(false);
+          }, 1500);
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the loader is visible
+    );
+
+    const target = document.getElementById("scroll-sentinel");
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) observer.unobserve(target);
+    };
+  }, [isLoadingMore, visibleCount, filteredPosts.length]);
+
   const [postIds, setPostIds] = useState<bigint[]>([]);
 
   const { data: nextId, isLoading: isLoadingNextId, isError: isNextIdError } = useReadContract({
@@ -71,7 +111,7 @@ export function Feed({ category, title }: FeedProps) {
         </h2>
       )}
       <div className="space-y-8">
-        {filteredPosts.map((post) => (
+        {displayedPosts.map((post) => (
           <TweetCard
             key={post.id.toString()}
             post={post}
@@ -80,6 +120,20 @@ export function Feed({ category, title }: FeedProps) {
           />
         ))}
 
+        {visibleCount < filteredPosts.length && (
+          <div id="scroll-sentinel" className="flex justify-center py-6">
+            <div className="text-center">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-zinc-500" />
+              <p className="text-xs font-mono uppercase tracking-wider text-zinc-600">
+                Loading more opinions...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 
+        COMMENTED OUT EMPTY STATES AS PER USER REQUEST TO FORCE MOCK DATA DISPLAY
+        
         {filteredPosts.length === 0 && (
           <div className="text-center py-20 border border-zinc-700/50 rounded-lg bg-zinc-800/95 shadow-xl shadow-black/80 ring-1 ring-zinc-700/20">
             <p className="text-sm font-mono uppercase tracking-wider text-zinc-400">
@@ -115,6 +169,7 @@ export function Feed({ category, title }: FeedProps) {
             )}
           </div>
         )}
+        */}
       </div>
     </div>
   );
