@@ -28,6 +28,7 @@ async function uploadToIpfs(content: string): Promise<string> {
 }
 
 import { Button } from "./ui/button";
+import { TransactionOverlay } from "./TransactionOverlay";
 import { X, Loader2, UserPlus, AlertCircle, PenLine } from "lucide-react";
 
 interface PostCreationModalProps {
@@ -148,18 +149,18 @@ export function PostCreationModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in"
+      className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-modal animate-slide-up"
+        className="w-full max-w-lg bg-[#0A0A0A] border border-grid-line rounded-[4px] animate-slide-up relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
-              <PenLine className="h-4 w-4 text-muted-foreground" />
+            <div className="w-8 h-8 rounded-[2px] bg-white/5 flex items-center justify-center">
+              <PenLine className="h-4 w-4 text-white" />
             </div>
             <h3 className="text-sm font-semibold text-foreground">
               Share an opinion
@@ -167,7 +168,7 @@ export function PostCreationModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="w-8 h-8 rounded-[2px] hover:bg-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -185,7 +186,7 @@ export function PostCreationModal({
             </div>
           ) : !registryAddressValid ? (
             <div className="space-y-3">
-              <div className="flex items-start gap-2 text-pending bg-pending/[0.06] rounded-xl p-3 text-xs">
+              <div className="flex items-start gap-2 text-pending bg-pending/[0.06] rounded-[4px] p-3 text-xs">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">Configuration needed</p>
@@ -203,7 +204,7 @@ export function PostCreationModal({
           ) : !isRegisteredAgent ? (
             <div className="space-y-3">
               {usingFallbackRegistry && (
-                <p className="text-xs text-muted-foreground bg-muted p-2.5 rounded-xl">
+                <p className="text-xs text-muted-foreground bg-muted/20 p-2.5 rounded-[4px]">
                   Using registry from environment variables.
                 </p>
               )}
@@ -211,12 +212,12 @@ export function PostCreationModal({
                 Register this wallet as an agent to start sharing opinions.
               </p>
               {error && (
-                <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-xl">
+                <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-[4px]">
                   {error.message}
                 </p>
               )}
               {isSuccess && (
-                <p className="text-xs text-agree bg-agree/[0.06] p-2.5 rounded-xl">
+                <p className="text-xs text-agree bg-agree/[0.06] p-2.5 rounded-[4px]">
                   Registered! You can share opinions now.
                 </p>
               )}
@@ -266,10 +267,10 @@ export function PostCreationModal({
                       key={key}
                       type="button"
                       onClick={() => setCategory(Number(key) as Category)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-[4px] text-xs font-medium uppercase tracking-wider transition-colors ${
                         category === Number(key)
-                          ? "bg-foreground text-background"
-                          : "bg-muted text-muted-foreground hover:text-foreground"
+                          ? "bg-primary text-black"
+                          : "bg-white/5 text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {label}
@@ -288,7 +289,7 @@ export function PostCreationModal({
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="What's your take?"
                   rows={4}
-                  className="w-full px-3 py-2.5 bg-canvas border border-border rounded-xl text-foreground text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-foreground/10 resize-none transition-shadow"
+                  className="w-full px-3 py-2.5 bg-[#0A0A0A] border border-grid-line rounded-[4px] text-foreground text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none transition-shadow"
                   required
                 />
               </div>
@@ -301,12 +302,12 @@ export function PostCreationModal({
               </p>
 
               {error && (
-                <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-xl">
+                <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-[4px]">
                   {error.message}
                 </p>
               )}
               {isSuccess && (
-                <p className="text-xs text-agree bg-agree/[0.06] p-2.5 rounded-xl">
+                <p className="text-xs text-agree bg-agree/[0.06] p-2.5 rounded-[4px]">
                   Opinion posted successfully.
                 </p>
               )}
@@ -338,6 +339,11 @@ export function PostCreationModal({
             </form>
           )}
         </div>
+        <TransactionOverlay
+          visible={isPending || isConfirming || isUploading}
+          title="Transaction Processing"
+          subtitle="Confirm in your wallet…"
+        />
       </div>
     </div>
   );

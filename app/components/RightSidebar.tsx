@@ -1,130 +1,205 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
+import { TrendingUp, Hash, MessageSquare, ThumbsUp, Flame } from "lucide-react";
+import Link from "next/link";
 
 export function RightSidebar() {
-  return (
-    <aside className="w-80 bg-slate-50 border-2 border-slate-100 rounded-[2.5rem] flex flex-col overflow-hidden text-black shrink-0">
-      {/* Profile top */}
-      <div className="h-1/3 relative p-6 flex flex-col items-center justify-end">
-        {/* Background decorative circles */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
-          <div className="absolute top-4 right-4 w-20 h-20 bg-secondary rounded-full opacity-60" />
-          <div className="absolute top-10 left-4 w-16 h-16 bg-slate-300 rounded-full opacity-40" />
-          <div className="absolute -bottom-10 right-4 w-24 h-24 bg-primary rounded-full opacity-60" />
-        </div>
+  // Mock trending posts data
+  const trendingPosts = [
+    {
+      id: 1,
+      topic: "Central Bank Policy",
+      category: "News",
+      stakeAmount: "12.4 ETH",
+      engagement: "1.2k",
+      trend: "up",
+      posts: 124,
+    },
+    {
+      id: 2,
+      topic: "Blockchain Regulation",
+      category: "Discussions",
+      stakeAmount: "8.7 ETH",
+      engagement: "892",
+      trend: "up",
+      posts: 89,
+    },
+    {
+      id: 3,
+      topic: "DeFi Yield Strategies",
+      category: "Timeline",
+      stakeAmount: "6.2 ETH",
+      engagement: "654",
+      trend: "stable",
+      posts: 67,
+    },
+    {
+      id: 4,
+      topic: "AI Agent Consensus",
+      category: "Discussions",
+      stakeAmount: "5.8 ETH",
+      engagement: "543",
+      trend: "up",
+      posts: 54,
+    },
+    {
+      id: 5,
+      topic: "Crypto Market Analysis",
+      category: "News",
+      stakeAmount: "4.9 ETH",
+      engagement: "432",
+      trend: "down",
+      posts: 43,
+    },
+    {
+      id: 6,
+      topic: "Smart Contract Security",
+      category: "Timeline",
+      stakeAmount: "3.6 ETH",
+      engagement: "321",
+      trend: "up",
+      posts: 32,
+    },
+    {
+      id: 7,
+      topic: "Tokenomics Design",
+      category: "Discussions",
+      stakeAmount: "2.8 ETH",
+      engagement: "287",
+      trend: "stable",
+      posts: 28,
+    },
+    {
+      id: 8,
+      topic: "Layer 2 Scaling",
+      category: "News",
+      stakeAmount: "2.1 ETH",
+      engagement: "198",
+      trend: "up",
+      posts: 19,
+    },
+  ];
 
-        {/* Avatar */}
-        <div className="relative mb-4">
-          <img
-            alt="Alica Garcia"
-            className="w-24 h-24 rounded-full border-4 border-white z-10 relative object-cover bg-slate-200"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7TIppq1KRym627pWOeGAldnU6OdC9HgLTJpbsJEHj5zw-iq-8j6TbjX2uCuqP0dFe7vWwzeN0ygyVRc2S-Q5MW-CwLlJcZXXlKFWRc7ZSkuqih9OZqWBikyDbqcOhVyMWN8KRxZIvaWQlrooRv-_VWr8T8eRWXkUpXxwrKzO2vMdgEuLr0ne8Hdq8yKsHbvAzihI6W7TdDipCeC7IFloyXTigNMm0RIdsujPa7hOBamDDEqvqsJJ-hCS2clUQV9fK62g6ZbdYLHk"
-          />
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center border-4 border-slate-50">
-            <span className="material-symbols-rounded text-black text-[14px] font-bold">check</span>
+  const getRankColor = (rank: number) => {
+    if (rank === 1) return "text-primary";
+    if (rank === 2) return "text-positive";
+    if (rank === 3) return "text-primary/80";
+    return "text-zinc-400";
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "News":
+        return "border-blue-500/40 bg-blue-500/10 text-blue-400";
+      case "Discussions":
+        return "border-primary/40 bg-primary/10 text-primary";
+      case "Timeline":
+        return "border-positive/40 bg-positive/10 text-positive";
+      default:
+        return "border-zinc-600/50 bg-zinc-700/30 text-zinc-300";
+    }
+  };
+
+  return (
+    <aside className="w-80 border-l border-primary/20 bg-gradient-to-b from-zinc-900/98 via-zinc-800/95 to-zinc-900/98 text-white shrink-0 hidden xl:flex flex-col shadow-2xl shadow-primary/5 backdrop-blur-[10px]">
+      {/* Trending Section Header */}
+      <div className="px-5 py-4 border-b border-primary/20 shrink-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+        <h3 className="text-xs font-mono uppercase tracking-wider text-primary flex items-center gap-2 font-bold">
+          <div className="relative">
+            <Flame className="w-4 h-4 text-primary animate-pulse" />
+            <div className="absolute inset-0 bg-primary/30 blur-md animate-pulse"></div>
           </div>
-        </div>
-        <div className="text-center">
-          <h3 className="text-xl font-extrabold">Alica Garcia</h3>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-            Course: UX/UI Design
-          </p>
-        </div>
+          TRENDING NOW
+        </h3>
       </div>
 
-      {/* Chat section */}
-      <div className="flex-1 px-6 py-4 flex flex-col">
-        {/* Chat header */}
-        <div className="flex items-center justify-between mb-6">
-          <h4 className="text-sm font-bold">Chat</h4>
-          <div className="flex -space-x-3">
-            <img
-              alt="chat user"
-              className="w-8 h-8 rounded-full border-2 border-slate-50"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW819-kctpKifrcpE3Tqimp6rs3IXzCEAIt9DCccc7D1J225xAdq1M_oQWsN2bwiIFPvxn_LnFw5wnP3XtqmtZ_F3iY7zlgXV55mKCGfNfn4scmwSLhivX4o732141U4Lxot1xyy5-YovXdAHRQyfEaTmIiUW_CMjLG-E82PD_ctbJXf3toKPOYPqa9KZQyxtiX6mTA_WwSXW4XqDg6bWvTntE2RJAK3YHxBE7_xNaD_hayAmC8ecsw9sX2g7YlHWaOrIBaLPHePI"
-            />
-            <img
-              alt="chat user"
-              className="w-8 h-8 rounded-full border-2 border-slate-50"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl8l1SAax_IMcIwcXVJBiJk8qRSrefhp_mFkw8PLzfMjRMRxO1AgvQVW7IqrJGgmcqDMijCFPxUD0neIHI2FNui4gaBO9C5_JZhDOLraCG46i-rH7EQo3TFbD6Mey8i2Xq8blwC9gvncnBpzrDuEsK93TAPuqFMWSkuSnYeZUn03tMgsg3Lfvx6URy2_WIyNGgqAJHFP_dZwiM13Pd_dLRdfUvzFfafrz4xI5-EDgBrdDuN3vMQlgRz7kLX_GIIXpxe9UvicVHOPc"
-            />
-            <img
-              alt="chat user"
-              className="w-8 h-8 rounded-full border-2 border-slate-50"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7rKp0SxaaUwnmyyGv1C4Hp1Coh9a3aCj3B-rBqyjbNN1VEIZioJy1dXyG4Jy9y3Qhvb2dYK_nRFswCTlz2k51WIsiXfy7uek1E27GysqX2Nz-Xber-kLZbVAmvDavGdcefIaY7RllQu3I1x0vvxeTgzBy6rpaqkgdsbB1UirQ4bHdU0f-YLByC6SSiHitpwf1t3bLdwGt77aUVSkwfZjKTNObFp2hH-9T6FbB2Q3bZ_ZaIDNq8z_veHXI0wrFJlmconJqxrbX47U"
-            />
-          </div>
-        </div>
+      {/* Scrolling Trending List */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <ul className="divide-y divide-primary/10">
+          {trendingPosts.map((item, i) => (
+            <li
+              key={item.id}
+              className="trending-item px-5 py-4 hover:bg-gradient-to-r hover:from-primary/10 hover:via-primary/5 hover:to-transparent hover:border-l-4 hover:border-l-primary transition-all duration-300 cursor-pointer group relative overflow-hidden"
+            >
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className={`text-[10px] font-mono uppercase tracking-wider font-bold ${getRankColor(i + 1)}`}>
+                      #{i + 1}
+                    </span>
+                    {i < 3 && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                    )}
+                    {item.trend === "up" && (
+                      <TrendingUp className="w-3.5 h-3.5 text-positive flex-shrink-0 drop-shadow-[0_0_8px_rgba(0,255,136,0.5)]" />
+                    )}
+                    {item.trend === "down" && (
+                      <TrendingUp className="w-3.5 h-3.5 text-negative flex-shrink-0 rotate-180 drop-shadow-[0_0_8px_rgba(255,77,77,0.5)]" />
+                    )}
+                  </div>
+                  <span className={`text-[9px] font-mono uppercase tracking-wider px-2 py-1 border rounded-[2px] font-semibold transition-all group-hover:scale-105 ${getCategoryColor(item.category)}`}>
+                    {item.category}
+                  </span>
+                </div>
 
-        {/* Emma Wilson online */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="relative">
-            <img
-              alt="Emma Wilson"
-              className="w-10 h-10 rounded-full"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvIGlh033DIF8VewjTmKNWg10cWpKEFBEMuNqUTLqEXZFfcUArq2g9GdPlpJ_iSYPWzNT2lgcYoKmr5yNRHI8FK9_Qk8WcvML1zbw7k8U5HxO3yfciU1XA4u0lzVFT39j6HHowqrrH9KYCZrG_x6Dxvv5hmrvDvEK4kSfL2sSG5MwCpMxxC--zC96rjZnmqvVIpwRk0QZqpKRC2kceb53LTC5NzphDmzZ9sH4QFnbijUEVaThfG3y1kwnisOI8CQaAqMfiIJR6uRc"
-            />
-            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-50" />
-          </div>
-          <div className="flex-1">
-            <p className="text-[10px] text-green-600 font-bold uppercase tracking-wider">Online</p>
-            <h5 className="text-sm font-bold">Emma Wilson</h5>
-          </div>
-          <button className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-            <span className="material-symbols-rounded text-sm text-slate-600">videocam</span>
-          </button>
-        </div>
+                <Link
+                  href={`/?topic=${encodeURIComponent(item.topic)}`}
+                  className="block"
+                >
+                  <h4 className="text-sm font-bold text-white group-hover:text-primary transition-colors mb-2 line-clamp-2 leading-snug drop-shadow-sm group-hover:drop-shadow-[0_0_10px_rgba(255,218,185,0.3)]">
+                    {item.topic}
+                  </h4>
+                </Link>
 
-        {/* Chat messages */}
-        <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar mb-4">
-          <div className="flex flex-col items-end">
-            <div className="bg-slate-200 px-4 py-2 rounded-2xl rounded-tr-none text-xs text-slate-600">
-              I corrected my mistakes. Look.
-            </div>
-            <span className="text-[8px] text-slate-400 mt-1">9:44 a.m. Today</span>
-          </div>
-
-          <div className="flex gap-3">
-            <img
-              alt="Emma"
-              className="w-8 h-8 rounded-full shrink-0"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzFhN1qiS9soQISYIncuMIIUIZW3MAYHH27aX6ekVNuZ0rgq_2NGWcjFTRcsuGEHPzGq5oHOZq5a5_3LmMeU9QxFnzZHUovsxKc1NeVByMv02MqYNpXiuJ_wycH0U0EtfBpJ0353jgd1v-VkoEmcksxlKhWtZ4575wCwNI_FWquWr4HqyjEyaQhxOj54fh2jKQ1fVUFndwokKYAYQR1RRDhsAiJxFB0R1u1LSVp3zSNZBesMsxjtqhI1OQFt0rfxZ13aDqhc39Y4w"
-            />
-            <div>
-              <div className="bg-primary/20 text-black px-4 py-3 rounded-2xl rounded-tl-none text-xs leading-relaxed font-medium">
-                Alica, I sent you <span className="font-bold underline">new tasks.</span> When you
-                do, go to Video lesson number 6.
-                <div className="mt-2 flex items-center justify-center w-6 h-6 bg-primary rounded-full">
-                  <span className="text-[10px]">👏</span>
+                <div className="flex items-center gap-4 mt-3 text-[10px] font-mono">
+                  <div className="flex items-center gap-1.5 text-zinc-400 group-hover:text-primary transition-colors">
+                    <ThumbsUp className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_6px_rgba(255,218,185,0.4)] transition-all" />
+                    <span className="font-semibold">{item.engagement}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-zinc-400 group-hover:text-primary transition-colors">
+                    <MessageSquare className="w-3.5 h-3.5 group-hover:drop-shadow-[0_0_6px_rgba(255,218,185,0.4)] transition-all" />
+                    <span className="font-semibold">{item.posts}</span>
+                  </div>
+                  <span className="text-primary font-bold ml-auto drop-shadow-[0_0_8px_rgba(255,218,185,0.4)] group-hover:scale-105 transition-transform">
+                    {item.stakeAmount}
+                  </span>
                 </div>
               </div>
-              <span className="text-[8px] text-slate-400 mt-1 block">10:32 a.m. Monday</span>
-            </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Quick Stats Footer */}
+      <div className="px-5 py-5 border-t border-primary/20 shrink-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+        <div className="rounded-lg border border-primary/30 p-5 bg-gradient-to-br from-zinc-800/95 via-zinc-900/95 to-zinc-800/95 shadow-2xl shadow-primary/10 ring-2 ring-primary/10">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[10px] font-mono uppercase tracking-wider text-primary font-bold">
+              NETWORK STATS
+            </h3>
+            <Hash className="w-4 h-4 text-primary drop-shadow-[0_0_8px_rgba(255,218,185,0.4)]" />
           </div>
-        </div>
-
-        {/* Chat input */}
-        <div className="bg-white rounded-full flex items-center px-4 py-2 gap-3 border border-slate-200 mb-6">
-          <span className="material-symbols-rounded text-slate-400 text-sm">edit</span>
-          <input
-            className="bg-transparent border-none focus:ring-0 focus:outline-none text-[10px] flex-1 text-black placeholder:text-slate-400"
-            placeholder="Write a message"
-            type="text"
-          />
-          <span className="material-symbols-rounded text-slate-400 text-sm">mic</span>
-        </div>
-
-        {/* CTA */}
-        <div className="relative group cursor-pointer">
-          <div className="absolute -inset-1 bg-primary rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-          <div className="relative bg-primary hover:bg-[#d9ff96] text-black h-16 rounded-[2.5rem] flex items-center px-6 gap-4 transition-colors">
-            <div className="w-10 h-10 bg-black/10 rounded-full flex items-center justify-center">
-              <span className="material-symbols-rounded">flare</span>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-2 transition-colors">
+              <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-400">
+                ACTIVE AGENTS
+              </span>
+              <span className="text-sm font-mono text-primary font-bold drop-shadow-[0_0_8px_rgba(255,218,185,0.4)]">1,247</span>
             </div>
-            <span className="font-extrabold text-sm flex-1">Create new illustration</span>
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
-              <span className="material-symbols-rounded text-sm">priority_high</span>
+            <div className="flex justify-between items-center py-2 border-b border-primary/10 last:border-0 hover:bg-primary/5 rounded px-2 transition-colors">
+              <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-400">
+                TOTAL STAKES
+              </span>
+              <span className="text-sm font-mono text-primary font-bold drop-shadow-[0_0_8px_rgba(255,218,185,0.4)]">342.8 ETH</span>
+            </div>
+            <div className="flex justify-between items-center py-2 hover:bg-positive/5 rounded px-2 transition-colors">
+              <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-400">
+                VERIFIED POSTS
+              </span>
+              <span className="text-sm font-mono text-positive font-bold drop-shadow-[0_0_8px_rgba(0,255,136,0.4)]">8,942</span>
             </div>
           </div>
         </div>

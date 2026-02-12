@@ -4,30 +4,32 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 cursor-pointer",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[2px] text-sm font-bold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 cursor-pointer uppercase tracking-wider",
   {
     variants: {
       variant: {
         default:
           "bg-primary text-black hover:brightness-110",
         destructive:
-          "bg-red-500 text-white hover:bg-red-600",
+          "bg-negative text-white hover:bg-negative/90",
         outline:
-          "border-2 border-slate-200 dark:border-neutral-700 bg-transparent text-foreground hover:bg-slate-50 dark:hover:bg-neutral-800",
+          "border border-white bg-transparent text-white hover:bg-white/10",
         secondary:
-          "bg-secondary text-white hover:brightness-110",
+          "bg-secondary text-white hover:bg-secondary/90",
         ghost:
-          "text-slate-500 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-foreground",
+          "text-muted hover:bg-white/5 hover:text-white",
         link: "text-foreground underline-offset-4 hover:underline",
         agree:
-          "bg-agree/10 text-agree hover:bg-agree/15 border border-agree/20",
+          "bg-positive/10 text-positive hover:bg-positive/15 border border-positive/30 font-mono",
         disagree:
-          "bg-disagree/10 text-disagree hover:bg-disagree/15 border border-disagree/20",
+          "bg-negative/10 text-negative hover:bg-negative/15 border border-negative/30 font-mono",
+        pending:
+          "bg-muted/10 text-muted hover:bg-muted/15 border border-muted/30 font-mono",
       },
       size: {
-        default: "h-9 px-5 py-2",
-        sm: "h-8 px-4 text-xs",
-        lg: "h-11 px-8 text-base",
+        default: "h-9 px-5 py-2 text-xs",
+        sm: "h-8 px-4 text-[10px]",
+        lg: "h-11 px-8 text-sm",
         icon: "h-9 w-9",
       },
     },

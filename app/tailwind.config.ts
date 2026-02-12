@@ -10,70 +10,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Agent Terminal V2 Color Palette
+        border: "#1A1A1A",
+        input: "#1A1A1A",
+        ring: "#FFDAB9",
+        background: "#050505",
+        foreground: "#FFFFFF",
         primary: {
-          DEFAULT: "#bef264",
+          DEFAULT: "#FFDAB9",
           foreground: "#000000",
         },
         secondary: {
-          DEFAULT: "#fb923c",
-          foreground: "#ffffff",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#0A0A0A",
+          foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#666666",
+          foreground: "#666666",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#FFDAB9",
+          foreground: "#000000",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#0A0A0A",
+          foreground: "#FFFFFF",
         },
-        "bg-light": "#f1f1f1",
-        "bg-dark": "#0a0a0a",
-        "card-light": "#ffffff",
-        "card-dark": "#171717",
-        agree: {
-          DEFAULT: "#3D9970",
-          light: "#EBF5F0",
-          muted: "#3D997020",
+        popover: {
+          DEFAULT: "#0A0A0A",
+          foreground: "#FFFFFF",
         },
-        disagree: {
-          DEFAULT: "#CC4B4B",
-          light: "#FDF0F0",
-          muted: "#CC4B4B20",
+        destructive: {
+          DEFAULT: "#FF4D4D",
+          foreground: "#FFFFFF",
         },
-        pending: {
-          DEFAULT: "#D4920B",
-          light: "#FFF8EB",
-          muted: "#D4920B18",
-        },
+        positive: "#00FF88",
+        negative: "#FF4D4D",
+        "grid-line": "#1A1A1A",
       },
       fontFamily: {
-        display: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
-        sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
-        mono: ["var(--font-jetbrains)", "JetBrains Mono", "ui-monospace", "monospace"],
+        sans: ["var(--font-condensed)", "Inter", "Roboto Condensed", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "Roboto Mono", "Space Mono", "monospace"],
+        display: ["var(--font-condensed)", "Inter", "Roboto Condensed", "sans-serif"],
+        serif: ["var(--font-serif)", "Playfair Display", "serif"],
       },
       borderRadius: {
-        "4xl": "2rem",
-        "5xl": "3rem",
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "4px",
+        DEFAULT: "4px",
+      },
+      letterSpacing: {
+        wider: "0.05em",
+        widest: "0.1em",
       },
       keyframes: {
         "fade-in": {

@@ -8,7 +8,6 @@ import {
   Newspaper,
   MessageSquare,
   Bot,
-  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
@@ -33,17 +32,17 @@ export function Sidebar() {
   }, [pathname]);
 
   return (
-    <aside className="w-20 bg-slate-100 rounded-full flex flex-col items-center py-8 gap-10 shrink-0">
-      {/* Logo */}
+    <aside className="w-16 bg-[#0A0A0A] border-r border-[#1A1A1A] flex flex-col items-center py-6 gap-6 shrink-0">
+      {/* Brand Logo - Minimalist (routes to profile) */}
       <Link
-        href="/"
-        className="w-12 h-12 bg-primary rounded-full flex items-center justify-center"
+        href="/profile"
+        className="w-10 h-10 bg-primary text-black rounded-[2px] flex items-center justify-center font-extrabold text-xs uppercase tracking-wider"
       >
-        <span className="text-black font-extrabold text-lg">Cs</span>
+        AT
       </Link>
 
-      {/* Nav */}
-      <nav className="flex flex-col gap-6 flex-1">
+      {/* Icon Navigation */}
+      <nav className="flex flex-col gap-4 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeHref === item.href;
@@ -53,29 +52,20 @@ export function Sidebar() {
               href={item.href}
               title={item.label}
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                isActive
-                  ? "bg-white text-black shadow-sm"
-                  : "text-slate-400 hover:text-black"
+                "w-10 h-10 rounded-[2px] flex items-center justify-center transition-colors",
+                isActive 
+                  ? "bg-white/10 text-white border border-white/20" 
+                  : "text-muted hover:text-white hover:bg-white/5 border border-transparent"
               )}
             >
-              <Icon className="h-5 w-5" strokeWidth={1.8} />
+              <Icon className="h-5 w-5" strokeWidth={1.5} />
             </Link>
           );
         })}
-        <button className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-black transition-colors">
-          <Plus className="h-5 w-5" strokeWidth={1.8} />
-        </button>
       </nav>
 
-      {/* Bottom dots */}
-      <div className="flex flex-col gap-6 pb-4">
-        <div className="w-10 h-20 bg-white rounded-full flex flex-col items-center justify-center gap-2 shadow-sm">
-          <div className="w-1 h-1 bg-slate-400 rounded-full" />
-          <div className="w-1 h-1 bg-slate-400 rounded-full" />
-          <div className="w-1 h-1 bg-slate-400 rounded-full" />
-        </div>
-      </div>
+      {/* Version Badge */}
+      <div className="pb-2 text-[8px] font-mono uppercase tracking-widest text-muted">V2</div>
     </aside>
   );
 }

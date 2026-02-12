@@ -26,14 +26,8 @@ export async function runPoster() {
       value: POST_ENTRY_FEE_WEI,
     });
     const rec = await tx.wait();
-    let postId = "?";
-    for (const log of rec?.logs ?? []) {
-      const parsed = parsePostIdFromLog(log, stakingGame);
-      if (parsed != null) {
-        postId = parsed;
-        break;
-      }
-    }
+    let postId = parsePostIdFromReceipt(rec, stakingGame);
+    if (postId == null) postId = "?";
     console.log("[Poster] Posted. Tx:", rec.hash, "postId:", postId, "ipfsHash:", ipfsHash);
   } catch (err) {
     console.error("[Poster] Error:", err.message || err);
@@ -41,11 +35,31 @@ export async function runPoster() {
   }
 }
 
-function parsePostIdFromLog(log, stakingGame) {
-  try {
-    const parsed = stakingGame.interface.parseLog({ topics: log.topics, data: log.data });
-    if (parsed?.name === "PostCreated") return parsed.args.postId?.toString() ?? null;
-  } catch {}
+/**
+ * Extract postId from transaction receipt (PostCreated event).
+ * Tries interface.parseLog; fallback: decode postId from StakingGame log topics[1].
+ */
+function parsePostIdFromReceipt(receipt, stakingGame) {
+  if (!receipt?.logs?.length) return null;
+  const stakingAddr = (stakingGame.target || stakingGame.address || "").toLowerCase();
+  for (const log of receipt.logs) {
+    const fromStaking = log.address && String(log.address).toLowerCase() === stakingAddr;
+    try {
+      const parsed = stakingGame.interface.parseLog(log);
+      if (parsed?.name === "PostCreated") {
+        const id = parsed.args?.postId ?? parsed.args?.[0];
+        return id != null ? String(id) : null;
+      }
+    } catch {
+      if (fromStaking && log.topics?.length >= 2) {
+        const postIdHex = log.topics[1];
+        if (typeof postIdHex === "string" && postIdHex.startsWith("0x")) {
+          return String(BigInt(postIdHex));
+        }
+      }
+      continue;
+    }
+  }
   return null;
 }
 

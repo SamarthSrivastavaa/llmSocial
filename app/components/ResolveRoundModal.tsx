@@ -8,6 +8,7 @@ import {
 } from "wagmi";
 import { STAKING_GAME_ABI, CONTRACT_ADDRESSES } from "@/lib/contracts";
 import { Button } from "./ui/button";
+import { TransactionOverlay } from "./TransactionOverlay";
 import { X, CheckCircle2, XCircle, AlertCircle, Scale } from "lucide-react";
 
 interface ResolveRoundModalProps {
@@ -80,18 +81,18 @@ export function ResolveRoundModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in"
+      className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-white rounded-2xl shadow-modal animate-slide-up"
+        className="w-full max-w-md bg-[#0A0A0A] border border-grid-line rounded-[4px] animate-slide-up relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
-              <Scale className="h-4 w-4 text-muted-foreground" />
+            <div className="w-8 h-8 rounded-[2px] bg-white/5 flex items-center justify-center">
+              <Scale className="h-4 w-4 text-white" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-foreground">
@@ -104,7 +105,7 @@ export function ResolveRoundModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="w-8 h-8 rounded-[2px] hover:bg-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -113,7 +114,7 @@ export function ResolveRoundModal({
         {/* Body */}
         <div className="px-5 pb-5 space-y-4">
           {resolved ? (
-            <div className={`p-4 rounded-xl ${outcome.bg}`}>
+            <div className={`p-4 rounded-[4px] ${outcome.bg}`}>
               <div className={`flex items-center gap-2 ${outcome.color}`}>
                 <outcome.icon className="h-5 w-5" />
                 <span className="text-sm font-semibold">{outcome.label}</span>
@@ -123,7 +124,7 @@ export function ResolveRoundModal({
             <>
               {/* Stake comparison */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-agree/[0.05]">
+                <div className="p-3 rounded-[4px] bg-agree/[0.05]">
                   <p className="text-[11px] text-muted-foreground mb-0.5">
                     Valid
                   </p>
@@ -134,7 +135,7 @@ export function ResolveRoundModal({
                     ETH
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-disagree/[0.05]">
+                <div className="p-3 rounded-[4px] bg-disagree/[0.05]">
                   <p className="text-[11px] text-muted-foreground mb-0.5">
                     Disputed
                   </p>
@@ -149,11 +150,11 @@ export function ResolveRoundModal({
 
               {/* Status */}
               {canResolve ? (
-                <p className="text-xs text-muted-foreground bg-muted p-3 rounded-xl">
+                <p className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-[4px]">
                   Voting has ended — ready to resolve.
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground bg-muted p-3 rounded-xl">
+                <p className="text-xs text-muted-foreground bg-muted/20 p-3 rounded-[4px]">
                   Voting ends:{" "}
                   <span className="font-mono text-foreground">
                     {new Date(endTime * 1000).toLocaleString()}
@@ -164,12 +165,12 @@ export function ResolveRoundModal({
           )}
 
           {error && (
-            <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-xl">
+            <p className="text-xs text-disagree bg-disagree/[0.06] p-2.5 rounded-[4px]">
               {error.message}
             </p>
           )}
           {isSuccess && (
-            <div className="flex items-center gap-2 text-xs text-agree bg-agree/[0.06] p-2.5 rounded-xl">
+            <div className="flex items-center gap-2 text-xs text-agree bg-agree/[0.06] p-2.5 rounded-[4px]">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Round resolved.
             </div>
@@ -198,6 +199,11 @@ export function ResolveRoundModal({
             </Button>
           </div>
         </div>
+        <TransactionOverlay
+          visible={isPending || isConfirming}
+          title="Resolving Round"
+          subtitle="Confirm in your wallet…"
+        />
       </div>
     </div>
   );
