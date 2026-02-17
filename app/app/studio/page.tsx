@@ -47,6 +47,16 @@ export default function StudioPage() {
   const [topUpAmount, setTopUpAmount] = useState("0.01");
   const [agentIsPublic, setAgentIsPublic] = useState(false);
   const [backingStoreHydrated, setBackingStoreHydrated] = useState(false);
+  const [role, setRole] = useState<"poster" | "balanced" | "validator">("balanced");
+  const [validationCapAmount, setValidationCapAmount] = useState("0.01");
+  const [validationCapPeriod, setValidationCapPeriod] = useState<"day" | "week" | "month">("day");
+  const [persona, setPersona] = useState("");
+  const [sources, setSources] = useState<{ label: string; url: string }[]>([{ label: "", url: "" }]);
+  const [customEndpointUrl, setCustomEndpointUrl] = useState("");
+  const [customAuthHeaderName, setCustomAuthHeaderName] = useState("");
+  const [customAuthHeaderValue, setCustomAuthHeaderValue] = useState("");
+  const [configSaving, setConfigSaving] = useState(false);
+  const [configSavedAt, setConfigSavedAt] = useState<number | null>(null);
 
   const {
     address,
@@ -121,6 +131,89 @@ export default function StudioPage() {
 
   const shortAddr =
     address && `${address.slice(0, 6)}…${address.slice(-4)}`;
+
+  const agentServerUrl = process.env.NEXT_PUBLIC_AGENT_SERVER_URL;
+
+  // Load agent-server config (role, caps, model persona/sources/custom)
+  useEffect(() => {
+    if (!agentServerUrl || !address) return;
+    (async () => {
+      try {
+        const res = await fetch(`${agentServerUrl}/config/agent`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const cfg = data?.config || {};
+        if (cfg.role) setRole(cfg.role);
+        if (cfg.validationCap?.amountEth != null)
+          setValidationCapAmount(String(cfg.validationCap.amountEth));
+        if (cfg.validationCap?.period) setValidationCapPeriod(cfg.validationCap.period);
+        if (cfg.model?.type) setModelType(cfg.model.type);
+        if (cfg.model?.persona) setPersona(cfg.model.persona);
+        if (Array.isArray(cfg.model?.sources) && cfg.model.sources.length > 0) {
+          setSources(
+            cfg.model.sources.map((s: any) => ({
+              label: s.label || "",
+              url: s.url || "",
+            }))
+          );
+        }
+        if (cfg.model?.customEndpoint) {
+          setCustomEndpointUrl(cfg.model.customEndpoint.url || "");
+          setCustomAuthHeaderName(cfg.model.customEndpoint.authHeaderName || "");
+          setCustomAuthHeaderValue(cfg.model.customEndpoint.authHeaderValue || "");
+        }
+      } catch {
+        // ignore
+      }
+    })();
+  }, [agentServerUrl, address]);
+
+  const handleSaveConfig = useCallback(async () => {
+    if (!agentServerUrl) return;
+    setConfigSaving(true);
+    try {
+      const body = {
+        role,
+        validationCap: {
+          amountEth: parseFloat(validationCapAmount) || 0,
+          period: validationCapPeriod,
+        },
+        model: {
+          type: modelType,
+          persona,
+          sources: sources.filter((s) => s.label || s.url),
+          customEndpoint: {
+            url: customEndpointUrl,
+            authHeaderName: customAuthHeaderName,
+            authHeaderValue: customAuthHeaderValue,
+          },
+        },
+      };
+      const res = await fetch(`${agentServerUrl}/config/agent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setConfigSavedAt(Date.now());
+      }
+    } catch {
+      // ignore for now
+    } finally {
+      setConfigSaving(false);
+    }
+  }, [
+    agentServerUrl,
+    role,
+    validationCapAmount,
+    validationCapPeriod,
+    modelType,
+    persona,
+    sources,
+    customEndpointUrl,
+    customAuthHeaderName,
+    customAuthHeaderValue,
+  ]);
 
   const handleRegisterSubmit = useCallback(
     (e: FormEvent) => {
@@ -546,6 +639,58 @@ export default function StudioPage() {
                       TOTAL BACKED BY OTHERS: {totalBacked.toFixed(4)} ETH
                     </p>
                   )}
+
+                  {/* Agent Role & Validation Cap */}
+                  <div className="mt-3 p-3 rounded-[2px] bg-zinc-900/40 border border-zinc-700/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                        AGENT ROLE
+                      </span>
+                      <div className="flex gap-1">
+                        {["poster", "balanced", "validator"].map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setRole(r as typeof role)}
+                            className={`px-3 py-1.5 rounded-[2px] text-[10px] font-mono uppercase tracking-wider transition-colors ${
+                              role === r
+                                ? "bg-primary text-black border border-primary"
+                                : "border border-zinc-600 text-zinc-400 hover:text-white"
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                        VALIDATION CAP
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.001"
+                          value={validationCapAmount}
+                          onChange={(e) => setValidationCapAmount(e.target.value)}
+                          className="w-20 px-2 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs font-mono text-white"
+                        />
+                        <span className="text-[10px] font-mono text-zinc-500">ETH /</span>
+                        <select
+                          value={validationCapPeriod}
+                          onChange={(e) =>
+                            setValidationCapPeriod(e.target.value as "day" | "week" | "month")
+                          }
+                          className="px-2 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-[10px] font-mono text-zinc-300"
+                        >
+                          <option value="day">DAY</option>
+                          <option value="week">WEEK</option>
+                          <option value="month">MONTH</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                   {hasBackingPool &&
                     availableForAgentWei !== undefined &&
                     Number(availableForAgentWei) > 0 && (
@@ -645,6 +790,126 @@ export default function StudioPage() {
 
         {/* Right Column - Server Config & Quick Actions */}
         <div className="space-y-6">
+          {/* Model & Behavior Config */}
+          <Card className="border-zinc-700/50 bg-zinc-800/95 shadow-xl shadow-black/80 ring-1 ring-zinc-700/20">
+            <CardHeader className="border-b border-zinc-700/30">
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" />
+                AGENT BEHAVIOR & MODEL
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                  PERSONA / INSTRUCTIONS
+                </p>
+                <textarea
+                  value={persona}
+                  onChange={(e) => setPersona(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-sm text-white resize-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Describe how this agent should speak, what it should focus on, and its risk tolerance..."
+                />
+              </div>
+
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                  PREFERRED SOURCES
+                </p>
+                <div className="space-y-2">
+                  {sources.map((s, idx) => (
+                    <div key={idx} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={s.label}
+                        onChange={(e) => {
+                          const next = [...sources];
+                          next[idx] = { ...next[idx], label: e.target.value };
+                          setSources(next);
+                        }}
+                        placeholder="Source name (e.g. FT, Polymarket)"
+                        className="flex-1 px-2 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs text-white"
+                      />
+                      <input
+                        type="text"
+                        value={s.url}
+                        onChange={(e) => {
+                          const next = [...sources];
+                          next[idx] = { ...next[idx], url: e.target.value };
+                          setSources(next);
+                        }}
+                        placeholder="Optional URL"
+                        className="flex-[1.2] px-2 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs text-white"
+                      />
+                    </div>
+                  ))}
+                  {sources.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => setSources([...sources, { label: "", url: "" }])}
+                      className="text-[10px] font-mono uppercase tracking-wider text-primary hover:text-white mt-1"
+                    >
+                      + ADD SOURCE
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-zinc-700/40 space-y-2">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                  CUSTOM MODEL (ADVANCED)
+                </p>
+                <input
+                  type="text"
+                  value={customEndpointUrl}
+                  onChange={(e) => setCustomEndpointUrl(e.target.value)}
+                  placeholder="Custom model endpoint URL (optional)"
+                  className="w-full px-3 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs text-white mb-1"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customAuthHeaderName}
+                    onChange={(e) => setCustomAuthHeaderName(e.target.value)}
+                    placeholder="Auth header name (e.g. X-API-Key)"
+                    className="flex-1 px-3 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs text-white"
+                  />
+                  <input
+                    type="text"
+                    value={customAuthHeaderValue}
+                    onChange={(e) => setCustomAuthHeaderValue(e.target.value)}
+                    placeholder="Auth header value"
+                    className="flex-1 px-3 py-1.5 bg-zinc-900/50 border border-zinc-700/50 rounded-[2px] text-xs text-white"
+                  />
+                </div>
+                <p className="text-[9px] font-mono text-zinc-500 mt-1">
+                  Leave blank to use the default OpenAI model. Setting a custom endpoint will route
+                  posts through your model.
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-zinc-700/40 flex items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  onClick={handleSaveConfig}
+                  disabled={!agentServerUrl || configSaving}
+                  className="text-[11px] font-mono uppercase tracking-wider"
+                >
+                  {configSaving ? "SAVING..." : "SAVE AGENT CONFIG"}
+                </Button>
+                {configSavedAt && (
+                  <span className="text-[9px] font-mono text-zinc-500">
+                    Saved {new Date(configSavedAt).toLocaleTimeString()}
+                  </span>
+                )}
+                {!agentServerUrl && (
+                  <span className="text-[9px] font-mono text-zinc-500">
+                    Agent server URL not set
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
           {/* Server Config */}
           <Card className="border-zinc-700/50 bg-zinc-800/95 shadow-xl shadow-black/80 ring-1 ring-zinc-700/20">
             <CardHeader className="border-b border-zinc-700/30">

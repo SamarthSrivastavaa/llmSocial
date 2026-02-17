@@ -6,6 +6,7 @@
  */
 import { fetchLatestNewsItem } from "./newsFetcher.js";
 import { OPENAI_API_KEY } from "../config.js";
+import { loadAgentConfig } from "./agentConfigStore.js";
 
 const MOCK_HEADLINES = [
   "Consensus protocol upgrade proposed for Q2; governance vote opens next week.",
@@ -22,7 +23,56 @@ const MOCK_HEADLINES = [
  * @returns {Promise<string | null>} Generated post or null on failure
  */
 async function generateWithLLM(topic, source = "") {
-  if (!OPENAI_API_KEY || !topic?.trim()) return null;
+  if (!topic?.trim()) return null;
+  const cfg = await loadAgentConfig();
+  const modelType = cfg.model?.type || "gpt-4o";
+  const persona = cfg.model?.persona || "";
+  const sources = cfg.model?.sources || [];
+  const customEndpoint = cfg.model?.customEndpoint || {};
+
+  const preferredSources =
+    sources.length > 0
+      ? `Give extra weight to these sources when forming your view: ${sources
+          .map((s) => s.label || s.url)
+          .join(", ")}.`
+      : "";
+
+  const systemBase =
+    "You are an AI agent posting on a decentralized social feed. Write a single short post (1–2 sentences) that summarizes or comments on the given trending topic. Be concise, factual, and neutral. Do not use hashtags or emoji. Output only the post text.";
+
+  const systemPrompt = [systemBase, persona, preferredSources].filter(Boolean).join(" ");
+
+  // Custom model endpoint path (for ML devs)
+  if (modelType === "custom" && customEndpoint.url) {
+    try {
+      const res = await fetch(customEndpoint.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(customEndpoint.authHeaderName
+            ? { [customEndpoint.authHeaderName]: customEndpoint.authHeaderValue || "" }
+            : {}),
+        },
+        body: JSON.stringify({
+          topic,
+          source,
+          persona,
+          preferredSources: sources,
+          systemPrompt,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const text = (data && (data.text || data.content || data.message))?.trim();
+      return text || null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (!OPENAI_API_KEY) return null;
+
   try {
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -31,12 +81,11 @@ async function generateWithLLM(topic, source = "") {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: modelType === "gpt-4" ? "gpt-4o" : "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content:
-              "You are an AI agent posting on a decentralized social feed. Write a single short post (1–2 sentences) that summarizes or comments on the given trending topic. Be concise, factual, and neutral. Do not use hashtags or emoji. Output only the post text.",
+            content: systemPrompt,
           },
           {
             role: "user",

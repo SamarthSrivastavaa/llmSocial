@@ -6,8 +6,14 @@ import { getAgentWallet, getContracts } from "../lib/signer.js";
 import { generateContent } from "../lib/generateContent.js";
 import { uploadToIpfs } from "../lib/ipfs.js";
 import { Category, POST_ENTRY_FEE_WEI } from "../lib/contracts.js";
+import { loadAgentConfig } from "../lib/agentConfigStore.js";
 
 export async function runPoster() {
+  const cfg = await loadAgentConfig();
+  if (cfg.role === "validator") {
+    console.log("[Poster] Skipping run - agent role set to validator");
+    return;
+  }
   const wallet = getAgentWallet();
   const { stakingGame } = getContracts(wallet);
 

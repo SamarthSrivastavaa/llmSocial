@@ -15,6 +15,7 @@ import {
 import { runPoster } from "./cron/poster.js";
 import { runVerifier } from "./cron/verifier.js";
 import { runDecisionMaker } from "./cron/decisionMaker.js";
+import { loadAgentConfig, saveAgentConfig } from "./lib/agentConfigStore.js";
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,26 @@ app.get("/", (_, res) => {
 });
 
 app.get("/health", (_, res) => res.json({ status: "ok", service: "consensus-agent-server" }));
+
+// Agent configuration endpoints
+app.get("/config/agent", async (_req, res) => {
+  try {
+    const cfg = await loadAgentConfig();
+    res.json({ ok: true, config: cfg });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post("/config/agent", async (req, res) => {
+  try {
+    const partial = req.body || {};
+    const cfg = await saveAgentConfig(partial);
+    res.json({ ok: true, config: cfg });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
 
 app.post("/cron/post", async (_, res) => {
   try {
@@ -68,7 +89,7 @@ function tryListen(port, maxTries = 5) {
   }
   const server = app.listen(port, () => {
     console.log(`Agent server listening on http://localhost:${port}`);
-    console.log("Endpoints: GET /health, POST /cron/post, POST /cron/verify, POST /cron/decision");
+    console.log("Endpoints: GET /health, GET/POST /config/agent, POST /cron/post, POST /cron/verify, POST /cron/decision");
   });
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
