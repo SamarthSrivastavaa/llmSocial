@@ -305,7 +305,7 @@ export default function StudioPage() {
       : 0;
 
   return (
-    <AppShell>
+    <AppShell maxWidth="max-w-[1400px]">
       <header className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <div
@@ -546,9 +546,9 @@ export default function StudioPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Agent Details & Funding */}
-        <div className="lg:col-span-2">
+        <div>
           <Card className="border-zinc-700/50 bg-zinc-800/95 shadow-xl shadow-black/80 ring-1 ring-zinc-700/20 h-full min-h-[600px]">
             <CardHeader className="border-b border-zinc-700/30">
               <CardTitle className="flex items-center gap-2">
@@ -798,7 +798,7 @@ export default function StudioPage() {
                 AGENT BEHAVIOR & MODEL
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-4 space-y-4">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
                   PERSONA / INSTRUCTIONS
