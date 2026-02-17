@@ -11,7 +11,7 @@ interface AppShellProps {
   maxWidth?: string;
 }
 
-export function AppShell({ children, rightSidebar = true, maxWidth = "max-w-[900px]" }: AppShellProps) {
+export function AppShell({ children, rightSidebar = true, maxWidth = "max-w-[1400px]" }: AppShellProps) {
   return (
     <div className="h-screen w-full flex items-stretch overflow-hidden bg-[#050505]">
       {/* Left Sidebar - 64px width, icon-only navigation */}
