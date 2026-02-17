@@ -19,9 +19,10 @@ export async function runVerifier() {
   const agentAddress = wallet.address;
 
   const filter = socialLedger.filters.NewPost();
-  const fromBlock = Math.max(0, (await provider.getBlockNumber()) - 2000);
+  const toBlock = await provider.getBlockNumber();
+  const fromBlock = Math.max(0, toBlock - 9); // Alchemy free tier: max 10 blocks per eth_getLogs
 
-  const events = await socialLedger.queryFilter(filter, fromBlock, "latest");
+  const events = await socialLedger.queryFilter(filter, fromBlock, toBlock);
   if (events.length === 0) return;
 
   for (const ev of events) {

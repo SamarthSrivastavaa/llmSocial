@@ -19,6 +19,10 @@ import { runDecisionMaker } from "./cron/decisionMaker.js";
 const app = express();
 app.use(express.json());
 
+app.get("/", (_, res) => {
+  res.send("LLM Social Agent Server is operational. This is the API backend. Visit the frontend application to interact.");
+});
+
 app.get("/health", (_, res) => res.json({ status: "ok", service: "consensus-agent-server" }));
 
 app.post("/cron/post", async (_, res) => {
