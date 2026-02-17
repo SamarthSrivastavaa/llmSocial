@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, FormEvent, useCallback, useMemo } from "react";
+import { useState, FormEvent, useCallback, useMemo, useEffect } from "react";
 import {
   useBalance,
   useSendTransaction,
   useWaitForTransactionReceipt,
+  useReadContract,
+  useWriteContract,
 } from "wagmi";
-import { parseEther, formatEther } from "viem";
+import { parseEther } from "viem";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAgentRegistration } from "@/lib/useAgentRegistration";
+import { CONTRACT_ADDRESSES } from "@/lib/contracts";
+import { BACKING_POOL_ABI } from "@/lib/contracts";
+import {
+  getAgentPublicMap,
+  setAgentPublic as setAgentPublicLocal,
+  getTotalBackedForAgent,
+} from "@/lib/backingStore";
 import {
   Loader2,
   AlertCircle,
@@ -27,6 +36,8 @@ import {
   Terminal,
   Send,
   Coins,
+  Lock,
+  Globe,
 } from "lucide-react";
 
 export default function StudioPage() {
@@ -34,6 +45,8 @@ export default function StudioPage() {
   const [modelType, setModelType] = useState("gpt-4");
   const [bio, setBio] = useState("");
   const [topUpAmount, setTopUpAmount] = useState("0.01");
+  const [agentIsPublic, setAgentIsPublic] = useState(false);
+  const [backingStoreHydrated, setBackingStoreHydrated] = useState(false);
 
   const {
     address,
@@ -60,6 +73,51 @@ export default function StudioPage() {
 
   const { isLoading: isTopUpConfirming, isSuccess: isTopUpSuccess } =
     useWaitForTransactionReceipt({ hash: topUpHash });
+
+  const hasBackingPool = !!CONTRACT_ADDRESSES.backingPool;
+  const backingPoolAddress = CONTRACT_ADDRESSES.backingPool as `0x${string}` | undefined;
+
+  const { data: contractIsPublic, refetch: refetchIsPublic } = useReadContract({
+    address: hasBackingPool ? backingPoolAddress : undefined,
+    abi: BACKING_POOL_ABI,
+    functionName: "isPublic",
+    args: address ? [address] : undefined,
+  });
+
+  const { data: contractTotalBacked } = useReadContract({
+    address: hasBackingPool ? backingPoolAddress : undefined,
+    abi: BACKING_POOL_ABI,
+    functionName: "totalBacked",
+    args: address ? [address] : undefined,
+  });
+
+  const { data: availableForAgentWei, refetch: refetchAvailable } = useReadContract({
+    address: hasBackingPool ? backingPoolAddress : undefined,
+    abi: BACKING_POOL_ABI,
+    functionName: "availableForAgent",
+    args: address ? [address] : undefined,
+  });
+
+  const {
+    writeContract: writeWithdrawToAgent,
+    data: withdrawHash,
+    isPending: isWithdrawPending,
+  } = useWriteContract();
+  const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } =
+    useWaitForTransactionReceipt({ hash: withdrawHash });
+  useEffect(() => {
+    if (isWithdrawSuccess) {
+      refetchAvailable();
+    }
+  }, [isWithdrawSuccess, refetchAvailable]);
+
+  const {
+    writeContract: writeSetPublic,
+    data: setPublicHash,
+    isPending: isSetPublicPending,
+  } = useWriteContract();
+  const { isLoading: isSetPublicConfirming, isSuccess: isSetPublicSuccess } =
+    useWaitForTransactionReceipt({ hash: setPublicHash });
 
   const shortAddr =
     address && `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -110,6 +168,48 @@ export default function StudioPage() {
     if (!address) return 0;
     return parseInt(address.slice(2, 6), 16) % 360;
   }, [address]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setBackingStoreHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (hasBackingPool && contractIsPublic !== undefined) {
+      setAgentIsPublic(!!contractIsPublic);
+    } else if (!hasBackingPool && address) {
+      setAgentIsPublic(!!getAgentPublicMap()[address.toLowerCase()]);
+    }
+  }, [hasBackingPool, address, contractIsPublic]);
+
+  useEffect(() => {
+    if (isSetPublicSuccess) refetchIsPublic();
+  }, [isSetPublicSuccess, refetchIsPublic]);
+
+  const handleSetPublic = useCallback(
+    (isPublic: boolean) => {
+      if (!address) return;
+      if (hasBackingPool && backingPoolAddress) {
+        writeSetPublic({
+          address: backingPoolAddress,
+          abi: BACKING_POOL_ABI,
+          functionName: "setPublic",
+          args: [isPublic],
+        });
+      } else {
+        setAgentPublicLocal(address, isPublic);
+        setAgentIsPublic(isPublic);
+      }
+    },
+    [address, hasBackingPool, backingPoolAddress, writeSetPublic]
+  );
+
+  const totalBacked =
+    address && backingStoreHydrated
+      ? hasBackingPool && contractTotalBacked !== undefined
+        ? Number(contractTotalBacked) / 1e18
+        : getTotalBackedForAgent(address)
+      : 0;
 
   return (
     <AppShell>
@@ -406,6 +506,73 @@ export default function StudioPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Public / Private - minimal row */}
+                  <div className="flex items-center justify-between py-2 px-3 rounded-[2px] bg-zinc-900/30 border border-zinc-700/30">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                      VISIBILITY
+                    </span>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        disabled={isSetPublicPending || isSetPublicConfirming}
+                        onClick={() => handleSetPublic(false)}
+                        className={`px-3 py-1.5 rounded-[2px] text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors disabled:opacity-50 ${
+                          !agentIsPublic
+                            ? "bg-primary text-black border border-primary"
+                            : "border border-zinc-600 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        <Lock className="h-3 w-3" />
+                        PRIVATE
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isSetPublicPending || isSetPublicConfirming}
+                        onClick={() => handleSetPublic(true)}
+                        className={`px-3 py-1.5 rounded-[2px] text-[10px] font-mono uppercase tracking-wider flex items-center gap-1.5 transition-colors disabled:opacity-50 ${
+                          agentIsPublic
+                            ? "bg-primary text-black border border-primary"
+                            : "border border-zinc-600 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        <Globe className="h-3 w-3" />
+                        PUBLIC
+                      </button>
+                    </div>
+                  </div>
+                  {agentIsPublic && totalBacked > 0 && (
+                    <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                      TOTAL BACKED BY OTHERS: {totalBacked.toFixed(4)} ETH
+                    </p>
+                  )}
+                  {hasBackingPool &&
+                    availableForAgentWei !== undefined &&
+                    Number(availableForAgentWei) > 0 && (
+                      <div className="flex items-center justify-between py-2 px-3 rounded-[2px] bg-primary/10 border border-primary/30">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+                          AVAILABLE FROM BACKERS: {(Number(availableForAgentWei) / 1e18).toFixed(4)} ETH
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          disabled={isWithdrawPending || isWithdrawConfirming}
+                          onClick={() =>
+                            backingPoolAddress &&
+                            writeWithdrawToAgent({
+                              address: backingPoolAddress,
+                              abi: BACKING_POOL_ABI,
+                              functionName: "withdrawToAgent",
+                            })
+                          }
+                          className="text-[10px] font-mono uppercase tracking-wider"
+                        >
+                          {isWithdrawPending || isWithdrawConfirming
+                            ? "WITHDRAWING…"
+                            : "WITHDRAW TO WALLET"}
+                        </Button>
+                      </div>
+                    )}
 
                   {/* Balance Display */}
                   <div className="p-5 bg-gradient-to-br from-zinc-900/80 to-zinc-800/80 border border-zinc-700/50 rounded-lg">

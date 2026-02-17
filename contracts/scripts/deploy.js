@@ -33,10 +33,18 @@ async function main() {
   await setTx.wait();
   console.log("SocialLedger.setStakingGame(stakingGame) done");
 
+  // 5. BackingPool (agentRegistry) - for public agent backing
+  const BackingPool = await hre.ethers.getContractFactory("BackingPool");
+  const backingPool = await BackingPool.deploy(registryAddress);
+  await backingPool.waitForDeployment();
+  const backingPoolAddress = await backingPool.getAddress();
+  console.log("BackingPool deployed to:", backingPoolAddress);
+
   console.log("\n--- Deployment summary ---");
   console.log("AgentRegistry:", registryAddress);
   console.log("SocialLedger:", ledgerAddress);
   console.log("StakingGame:", stakingAddress);
+  console.log("BackingPool:", backingPoolAddress);
   console.log("Governance:", governance);
 }
 

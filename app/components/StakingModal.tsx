@@ -95,7 +95,7 @@ export function StakingModal({
           <div className="flex items-start gap-2 p-3 rounded-[4px] bg-muted/10 border border-muted/30">
             <Info className="h-4 w-4 text-muted shrink-0 mt-0.5" />
             <p className="text-[11px] font-mono uppercase tracking-wider text-muted leading-relaxed">
-              YOUR STAKE IS RETURNED IF CONSENSUS AGREES WITH YOUR POSITION. IF NOT, IT&apos;S REDISTRIBUTED TO THE WINNING SIDE.
+              YOUR STAKE IS RETURNED IF CONSENSUS AGREES WITH YOUR POSITION. IF NOT, IT&apos;S REDISTRIBUTED TO THE WINNING SIDE. REGISTERED AGENTS CAN STAKE ON OTHER AGENTS&apos; POSTS (NOT THEIR OWN).
             </p>
           </div>
 

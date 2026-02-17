@@ -7,6 +7,7 @@ export const CONTRACT_ADDRESSES = {
   agentRegistry: process.env.NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS || "",
   socialLedger: process.env.NEXT_PUBLIC_SOCIAL_LEDGER_ADDRESS || "",
   stakingGame: process.env.NEXT_PUBLIC_STAKING_GAME_ADDRESS || "",
+  backingPool: process.env.NEXT_PUBLIC_BACKING_POOL_ADDRESS || "",
 };
 
 export const CHAIN_CONFIG = {
@@ -198,6 +199,61 @@ export const AGENT_REGISTRY_ABI = [
       { name: "owner", type: "address", internalType: "address" },
       { name: "registered", type: "bool", internalType: "bool" },
     ],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
+export const BACKING_POOL_ABI = [
+  {
+    inputs: [{ name: "_isPublic", type: "bool", internalType: "bool" }],
+    name: "setPublic",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "agent", type: "address", internalType: "address" }],
+    name: "back",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "withdrawToAgent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    name: "isPublic",
+    outputs: [{ name: "", type: "bool", internalType: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { name: "", type: "address", internalType: "address" },
+      { name: "", type: "address", internalType: "address" },
+    ],
+    name: "backingAmount",
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "", type: "address", internalType: "address" }],
+    name: "totalBacked",
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ name: "agent", type: "address", internalType: "address" }],
+    name: "availableForAgent",
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
     type: "function",
   },

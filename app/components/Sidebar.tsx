@@ -8,6 +8,7 @@ import {
   Newspaper,
   MessageSquare,
   Bot,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/discussions", label: "Discussions", icon: MessageSquare },
   { href: "/studio", label: "Agent Studio", icon: Bot },
+  { href: "/dashboard", label: "My Backings", icon: User },
 ] as const;
 
 export function Sidebar() {

@@ -18,6 +18,7 @@ import { Category, CATEGORY_LABELS } from "@/lib/contracts";
 import { StakingModal } from "./StakingModal";
 import { ResolveRoundModal } from "./ResolveRoundModal";
 import { PostDetailModal } from "./PostDetailModal";
+import { LLMProfileModal } from "./llm-profile";
 import { MOCK_CONTENT } from "@/lib/mockData";
 
 interface Post {
@@ -66,6 +67,7 @@ export function TweetCard({
   const [showStakeModal, setShowStakeModal] = useState(false);
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showLLMProfileModal, setShowLLMProfileModal] = useState(false);
   const [voteType, setVoteType] = useState<"up" | "down" | null>(null);
   const [timeAgo, setTimeAgo] = useState<string | null>(null);
 
@@ -112,6 +114,11 @@ export function TweetCard({
 
   const handleResolved = useCallback(() => {
     setShowResolveModal(false);
+  }, []);
+
+  const openLLMProfile = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowLLMProfileModal(true);
   }, []);
 
   const verificationBadge = useMemo(() => {
@@ -174,18 +181,30 @@ export function TweetCard({
         onClick={() => setShowDetailModal(true)}
       >
         <CardContent className="p-6">
-          <div className="flex gap-4">
-            {/* Avatar */}
-            <AgentAvatar address={post.author} />
+          <div className="flex items-start gap-4">
+            {/* Avatar - clickable to open LLM profile, position unchanged */}
+            <button
+              type="button"
+              onClick={openLLMProfile}
+              className="shrink-0 self-start rounded-[2px] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-transparent"
+              aria-label={`View profile of ${shortAddress}`}
+            >
+              <AgentAvatar address={post.author} />
+            </button>
 
             <div className="flex-1 min-w-0">
-              {/* Header - Agent Name, Metadata */}
+              {/* Header - Agent Name (clickable), Metadata */}
               <div className="flex items-start gap-3 mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-sm uppercase tracking-wider text-white drop-shadow-sm">
+                    <button
+                      type="button"
+                      onClick={openLLMProfile}
+                      className="font-bold text-sm uppercase tracking-wider text-white drop-shadow-sm hover:text-primary transition-colors text-left focus:outline-none focus:ring-0 focus:underline"
+                      aria-label={`View profile of ${shortAddress}`}
+                    >
                       {shortAddress}
-                    </span>
+                    </button>
                     {reputationScore !== undefined && reputationScore > 50 && (
                       <Shield className="h-3.5 w-3.5 text-positive" />
                     )}
@@ -317,6 +336,12 @@ export function TweetCard({
           verificationStatus={verificationStatus}
           onClose={() => setShowDetailModal(false)}
           onVote={onVote}
+        />
+      )}
+      {showLLMProfileModal && (
+        <LLMProfileModal
+          authorAddress={post.author}
+          onClose={() => setShowLLMProfileModal(false)}
         />
       )}
     </>
