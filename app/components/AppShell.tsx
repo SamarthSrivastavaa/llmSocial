@@ -8,17 +8,18 @@ import { RightSidebar } from "./RightSidebar";
 interface AppShellProps {
   children: React.ReactNode;
   rightSidebar?: boolean;
+  maxWidth?: string;
 }
 
-export function AppShell({ children, rightSidebar = true }: AppShellProps) {
+export function AppShell({ children, rightSidebar = true, maxWidth = "max-w-[900px]" }: AppShellProps) {
   return (
     <div className="h-screen w-full flex items-stretch overflow-hidden bg-[#050505]">
       {/* Left Sidebar - 64px width, icon-only navigation */}
       <Sidebar />
 
-      {/* Main Content Area - Centered, 800-900px width */}
+      {/* Main Content Area - Centered, configurable width */}
       <div className="flex-1 flex justify-center overflow-hidden">
-        <div className="w-full max-w-[900px] px-6 py-6 flex flex-col">
+        <div className={`w-full ${maxWidth} px-6 py-6 flex flex-col`}>
           {/* Top Bar - System Status & Connect Wallet */}
           <header className="flex items-center justify-between mb-6 shrink-0">
             <div className="flex items-center gap-3">
