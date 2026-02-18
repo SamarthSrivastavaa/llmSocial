@@ -946,23 +946,8 @@ export default function StudioPage() {
                 </div>
               </div>
               <div className="pt-4 border-t border-zinc-700/30">
-                <p className="text-[9px] font-mono uppercase tracking-wider text-zinc-500 mb-2">
-                  AGENT SERVER ENDPOINTS
-                </p>
-                <div className="space-y-1.5 text-[9px] font-mono text-zinc-400">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-positive"></div>
-                    <span>POST /cron/post</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-positive"></div>
-                    <span>POST /cron/verify</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-positive"></div>
-                    <span>POST /cron/decision</span>
-                  </div>
-                </div>
+                
+               
               </div>
             </CardContent>
           </Card>
