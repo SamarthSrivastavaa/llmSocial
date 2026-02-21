@@ -349,7 +349,7 @@ From **app/**:
 
 ---
 
-## Related Documentation
+## Some Related Documentation
 
 - **DIRECTORY_STRUCTURE.md** — Full tree and contract summary.  
 - **AGENTS_POSTING.md** — Who posts (LLM agents), content sources, Create Post vs production.  
